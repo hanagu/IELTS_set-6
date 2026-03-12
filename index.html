@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IELTS Vocabulary Flashcards</title>
+    <style>
+        /* 눈이 편안한 색상 및 심플한 디자인 적용 */
+        :root {
+            --bg-color: #f4f5f7;
+            --card-bg: #ffffff;
+            --text-main: #2d3748;
+            --text-sub: #718096;
+            --accent: #3182ce;
+            --accent-hover: #2b6cb0;
+            --border-color: #e2e8f0;
+            --warning-color: #e53e3e;
+        }
+
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            color: var(--text-main);
+            margin: 0 0 10px 0;
+        }
+
+        .status-bar {
+            font-size: 1.1rem;
+            color: var(--text-sub);
+            font-weight: 600;
+        }
+
+        /* 메인 컨테이너 */
+        .app-container {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        /* 플래시카드 영역 (3D 수평 뒤집기 구현) */
+        .flashcard-wrapper {
+            width: 100%;
+            perspective: 1200px;
+        }
+
+        .flashcard {
+            width: 100%;
+            height: 450px;
+            position: relative;
+            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+            transform-style: preserve-3d;
+            cursor: pointer;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        }
+
+        .flashcard.no-transition {
+            transition: none !important;
+        }
+
+        .flashcard.is-flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 16px;
+            background-color: var(--card-bg);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            box-sizing: border-box;
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+
+        .card-back {
+            transform: rotateY(180deg);
+            justify-content: center;
+            gap: 25px;
+        }
+
+        .word-en {
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 10px;
+            word-break: keep-all;
+        }
+
+        .word-pron {
+            font-size: 1.4rem;
+            color: var(--text-sub);
+            font-family: 'Times New Roman', Times, serif;
+            letter-spacing: 1px;
+        }
+
+        .word-kr {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin: 0;
+            word-break: keep-all;
+        }
+
+        .example-box {
+            background-color: #f8fafc;
+            padding: 25px;
+            border-radius: 12px;
+            width: 100%;
+            border: 1px solid var(--border-color);
+            box-sizing: border-box;
+        }
+
+        .example-en {
+            font-size: 1.3rem;
+            font-style: italic;
+            color: var(--text-main);
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .example-kr {
+            font-size: 1.15rem;
+            color: var(--text-sub);
+            line-height: 1.5;
+        }
+
+        /* 하단 컨트롤 및 네비게이션 영역 */
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: stretch;
+            width: 100%;
+            gap: 15px;
+        }
+
+        button, .review-toggle {
+            flex: 1;
+            padding: 18px 10px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        button {
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background-color: var(--card-bg);
+            color: var(--text-main);
+        }
+
+        button:hover {
+            background-color: #e2e8f0;
+        }
+
+        button.btn-primary {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+        }
+
+        button.btn-primary:hover {
+            background-color: var(--accent-hover);
+        }
+
+        button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        /* 연습 필요 체크박스 디자인 */
+        .review-toggle {
+            gap: 8px;
+            background-color: #fff5f5; /* 체크박스 영역 강조 (연한 붉은 톤) */
+            border: 1px solid #feb2b2;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            color: var(--warning-color);
+        }
+        
+        .review-toggle:hover {
+            background-color: #fed7d7;
+        }
+
+        .review-toggle input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: var(--warning-color);
+            margin: 0;
+        }
+
+        .review-toggle span {
+            font-size: 1.1rem;
+            font-weight: 700;
+            user-select: none;
+        }
+
+        /* 결과 화면 */
+        .result-screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--card-bg);
+            padding: 50px 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            width: 100%;
+            box-sizing: border-box;
+            border: 1px solid var(--border-color);
+        }
+
+        .result-screen h2 {
+            font-size: 2rem;
+            color: var(--text-main);
+            margin-bottom: 20px;
+        }
+
+        .result-screen p {
+            font-size: 1.3rem;
+            color: var(--text-sub);
+            margin-bottom: 40px;
+            line-height: 1.6;
+        }
+
+        .result-buttons {
+            display: flex;
+            gap: 15px;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .result-buttons button {
+            max-width: 250px;
+        }
+
+        @media (max-width: 650px) {
+            .flashcard { height: 500px; }
+            .word-en { font-size: 2.8rem; }
+            .word-kr { font-size: 2rem; }
+            .example-en { font-size: 1.1rem; }
+            .example-kr { font-size: 1rem; }
+            
+            /* 모바일에서는 버튼들을 세로로 배치 */
+            .controls { flex-direction: column; gap: 10px; }
+            button, .review-toggle { padding: 15px 10px; width: 100%; }
+            
+            .result-buttons { flex-direction: column; align-items: center; }
+            .result-buttons button { max-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <header id="app-header">
+        <h1>IELTS Vocabulary Practice</h1>
+        <div class="status-bar">단어 <span id="current-num">1</span> / <span id="total-num">10</span></div>
+    </header>
+
+    <div class="app-container" id="study-container">
+        
+        <!-- 플래시카드 영역 -->
+        <div class="flashcard-wrapper" onclick="toggleFlip()">
+            <div class="flashcard" id="flashcard">
+                <!-- 앞면 (영어) -->
+                <div class="card-face card-front">
+                    <div class="word-en" id="word-en">word</div>
+                    <div class="word-pron" id="word-pron">/wɜːrd/</div>
+                </div>
+                <!-- 뒷면 (뜻과 예문) -->
+                <div class="card-face card-back">
+                    <div class="word-kr" id="word-kr">단어 뜻</div>
+                    <div class="example-box">
+                        <div class="example-en" id="example-en">Example sentence.</div>
+                        <div class="example-kr" id="example-kr">예문 해석입니다.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 네비게이션 및 체크 버튼 영역 -->
+        <div class="controls">
+            <button id="btn-prev" onclick="prevCard()">◀ 이전 단어</button>
+            
+            <!-- 체크박스 영역 이동 및 텍스트 수정 -->
+            <label class="review-toggle">
+                <input type="checkbox" id="mark-review">
+                <span>연습 필요</span>
+            </label>
+            
+            <button id="btn-next" onclick="nextCard()" class="btn-primary">다음 단어 ▶</button>
+        </div>
+
+    </div>
+
+    <!-- 결과 화면 -->
+    <div class="result-screen" id="result-screen">
+        <h2>🎉 학습 라운드 완료!</h2>
+        <p id="result-message">수고하셨습니다. 학습 결과를 확인하세요.</p>
+        <div class="result-buttons">
+            <button id="btn-retry" class="btn-primary" onclick="startReviewRound()">연습 필요한 단어 다시 학습</button>
+            <button onclick="window.location.reload()">전체 처음부터 시작</button>
+        </div>
+    </div>
+
+    <script>
+        const rawVocabData = [
+            { w: "hardship", p: "/ˈhɑːrdʃɪp/", k: "어려움, 곤란", ex: "Many international students experience financial hardship during their first year of study.", ek: "많은 유학생들이 학업 첫해에 재정적인 어려움을 겪습니다." },
+            { w: "lifespan", p: "/ˈlaɪfspæn/", k: "수명", ex: "Advances in medical technology have significantly increased the average human lifespan.", ek: "의학 기술의 발전은 인간의 평균 수명을 크게 증가시켰습니다." },
+            { w: "longevity", p: "/lɔːnˈdʒevəti/", k: "장수, 오래 지속됨", ex: "Diet and regular exercise are crucial factors contributing to longevity.", ek: "식단과 규칙적인 운동은 장수에 기여하는 중요한 요인입니다." },
+            { w: "impose", p: "/ɪmˈpoʊz/", k: "부과하다, 강요하다", ex: "The government decided to impose heavy taxes on carbon emissions to protect the environment.", ek: "정부는 환경을 보호하기 위해 탄소 배출에 무거운 세금을 부과하기로 결정했습니다." },
+            { w: "nursing home", p: "/ˈnɜːrsɪŋ hoʊm/", k: "요양원", ex: "Due to the aging population, the demand for nursing home facilities is rising rapidly.", ek: "인구 고령화로 인해 요양원 시설에 대한 수요가 급격히 증가하고 있습니다." },
+            { w: "juggle", p: "/ˈdʒʌɡl/", k: "(두 가지 이상의 일을) 곡예하듯 하다, 조율하다", ex: "Working parents often find it challenging to juggle their career responsibilities with family life.", ek: "일하는 부모들은 종종 직장에서의 책임과 가정 생활을 조율하는 데 어려움을 느낍니다." },
+            { w: "monument", p: "/ˈmɑːnjumənt/", k: "기념물, 유적", ex: "The ancient monument was restored to preserve the country's cultural heritage.", ek: "그 고대 유적은 국가의 문화 유산을 보존하기 위해 복원되었습니다." },
+            { w: "acute", p: "/əˈkjuːt/", k: "극심한, 급성의", ex: "The region is currently facing an acute shortage of clean drinking water.", ek: "그 지역은 현재 깨끗한 식수의 극심한 부족에 직면해 있습니다." },
+            { w: "procure", p: "/proʊˈkjʊr/", k: "구하다, 조달하다", ex: "The institution managed to procure the necessary funding for the upcoming research project.", ek: "그 기관은 다가오는 연구 프로젝트에 필요한 자금을 조달하는 데 성공했습니다." },
+            { w: "anecdote", p: "/ˈænɪkdoʊt/", k: "일화", ex: "The lecturer used a humorous anecdote to illustrate his complex theoretical point.", ek: "강사는 자신의 복잡한 이론적 요점을 설명하기 위해 유머러스한 일화를 사용했습니다." },
+            { w: "endurance", p: "/ɪnˈdʊrəns/", k: "인내, 참을성, 지구력", ex: "Marathon running requires remarkable physical and mental endurance.", ek: "마라톤 달리기는 놀라운 육체적, 정신적 지구력을 요구합니다." },
+            { w: "ruthless", p: "/ˈruːθləs/", k: "무자비한, 가차 없는", ex: "The company employed ruthless tactics to eliminate its market competitors.", ek: "그 회사는 시장 경쟁자들을 제거하기 위해 무자비한 전술을 사용했습니다." },
+            { w: "peer", p: "/pɪr/", k: "또래, 동년배", ex: "Adolescents are highly influenced by the behavior and opinions of their peers.", ek: "청소년들은 또래의 행동과 의견에 큰 영향을 받습니다." },
+            { w: "rebel", p: "/ˈrebl/", k: "반항하다, 반역자", ex: "The younger generation tends to rebel against traditional societal norms.", ek: "젊은 세대는 전통적인 사회 규범에 반항하는 경향이 있습니다." },
+            { w: "graze", p: "/ɡreɪz/", k: "풀을 뜯다, 방목하다", ex: "The cattle were allowed to graze freely in the open pasture.", ek: "소들은 탁 트인 목초지에서 자유롭게 풀을 뜯도록 허용되었습니다." },
+            { w: "tout", p: "/taʊt/", k: "장점을 내세우다, 광고하다", ex: "The new software is highly touted as a revolutionary tool for data analysis.", ek: "그 새로운 소프트웨어는 데이터 분석을 위한 혁신적인 도구로 강력히 광고되고 있습니다." },
+            { w: "denomination", p: "/dɪˌnɑːmɪˈneɪʃn/", k: "(화폐 등의) 액면가, 단위, 종파", ex: "The currency is available in several different denominations.", ek: "그 통화는 여러 다른 액면가로 제공됩니다." },
+            { w: "levy", p: "/ˈlevi/", k: "추가 부담금, (세금을) 부과하다", ex: "A new levy was introduced on imported luxury goods to boost local businesses.", ek: "지역 기업을 활성화하기 위해 수입 명품에 새로운 부담금이 도입되었습니다." },
+            { w: "void", p: "/vɔɪd/", k: "빈 공간, 무효의", ex: "The contract was declared null and void due to a major breach of its terms.", ek: "그 계약은 중대한 조항 위반으로 인해 무효로 선언되었습니다." },
+            { w: "in time", p: "/ɪn taɪm/", k: "제때에, 머지않아", ex: "If carbon emissions are not reduced in time, the environmental damage will be irreversible.", ek: "탄소 배출량이 제때에 줄어들지 않으면, 환경적 피해는 돌이킬 수 없게 될 것입니다." },
+            { w: "petition", p: "/pəˈtɪʃn/", k: "청원, 진정서", ex: "Residents signed a petition to stop the construction of the new highway near their neighborhood.", ek: "주민들은 동네 근처의 새로운 고속도로 건설을 막기 위해 청원서에 서명했습니다." },
+            { w: "depreciation", p: "/dɪˌpriːʃiˈeɪʃn/", k: "가치 하락, 감가상각", ex: "The rapid depreciation of the currency led to a significant increase in national inflation.", ek: "통화의 급격한 가치 하락은 국가 인플레이션의 심각한 증가를 초래했습니다." },
+            { w: "compartment", p: "/kəmˈpɑːrtmənt/", k: "구획, 칸", ex: "The travel suitcase features a separate compartment specifically for electronic devices.", ek: "이 여행용 가방은 전자기기를 위한 별도의 수납 칸을 갖추고 있습니다." },
+            { w: "give off", p: "/ɡɪv ɔːf/", k: "(냄새, 빛, 열 등을) 내뿜다", ex: "Certain chemical reactions give off toxic fumes that are highly hazardous to human health.", ek: "특정 화학 반응은 인간의 건강에 매우 위험한 유독 가스를 내뿜습니다." },
+            { w: "avail", p: "/əˈveɪl/", k: "도움이 되다, 소용되다", ex: "The students were encouraged to avail themselves of the university library's vast resources.", ek: "학생들은 대학 도서관의 방대한 자료들을 적극 활용하도록 권장받았습니다." },
+            { w: "plummet", p: "/ˈplʌmɪt/", k: "곤두박질치다, 급락하다", ex: "Stock prices plummeted following the unexpected announcement of the economic crisis.", ek: "예상치 못한 경제 위기 발표 직후 주가가 곤두박질쳤습니다." },
+            { w: "luminosity", p: "/ˌluːmɪˈnɑːsəti/", k: "광도, 발광", ex: "Astronomers measure the luminosity of distant stars to determine their exact distance from Earth.", ek: "천문학자들은 먼 별의 광도를 측정하여 지구와의 정확한 거리를 알아냅니다." },
+            { w: "resort", p: "/rɪˈzɔːrt/", k: "(최후의 수단으로) 의지하다, 휴양지", ex: "When diplomatic efforts completely fail, nations may resort to economic sanctions.", ek: "외교적 노력이 완전히 실패할 때, 국가들은 경제 제재에 의지할 수 있습니다." },
+            { w: "solid by-product", p: "/ˈsɑːlɪd baɪ ˈprɑːdʌkt/", k: "고체 부산물", ex: "The industrial manufacturing process generates a large amount of solid by-product that must be recycled.", ek: "이 산업 제조 과정은 반드시 재활용되어야 하는 막대한 양의 고체 부산물을 발생시킵니다." },
+            { w: "be subjected to", p: "/bi səbˈdʒektɪd tu/", k: "~을 받다, 당하다", ex: "All imported agricultural goods must be subjected to rigorous safety inspections.", ek: "모든 수입 농산물은 엄격한 안전 검사를 받아야 합니다." },
+            { w: "yield", p: "/jiːld/", k: "생산하다, 산출량, 양보하다", ex: "The introduction of modern farming techniques has significantly increased crop yields.", ek: "현대적인 농업 기술의 도입은 농작물 산출량을 크게 증가시켰습니다." },
+            { w: "stature", p: "/ˈstætʃər/", k: "지명도, 위상, 키", ex: "The scientist grew in stature globally after publishing his groundbreaking research.", ek: "그 과학자는 획기적인 연구를 발표한 후 세계적인 위상이 높아졌습니다." },
+            { w: "dispensable", p: "/dɪˈspensəbl/", k: "없어도 되는, 불필요한", ex: "In times of severe financial crisis, entertainment is often seen as a dispensable expense.", ek: "심각한 재정 위기 시기에는 오락비가 종종 없어도 되는 지출로 간주됩니다." },
+            { w: "centrifuge", p: "/ˈsentrɪfjuːdʒ/", k: "원심 분리기", ex: "The medical laboratory uses a high-speed centrifuge to separate blood components.", ek: "의료 실험실은 혈액 성분을 분리하기 위해 고속 원심 분리기를 사용합니다." },
+            { w: "deficit", p: "/ˈdefɪsɪt/", k: "적자, 부족액", ex: "The national budget deficit has reached an unprecedented level this fiscal year.", ek: "이번 회계연도에 국가 예산 적자가 전례 없는 수준에 도달했습니다." },
+            { w: "basin", p: "/ˈbeɪsn/", k: "유역, 분지, 대야", ex: "The Amazon river basin is known for its exceptionally rich biodiversity and fertile soil.", ek: "아마존 강 유역은 유난히 풍부한 생물 다양성과 비옥한 토양으로 유명합니다." },
+            { w: "implication", p: "/ˌɪmplɪˈkeɪʃn/", k: "영향, 결과, 암시", ex: "The new tax policy has profound implications for the global healthcare sector.", ek: "새로운 조세 정책은 글로벌 의료 부문에 심오한 영향을 미칩니다." },
+            { w: "plea", p: "/pliː/", k: "애원, 간청", ex: "The international humanitarian organization made an urgent plea for medical donations.", ek: "국제 인도주의 단체는 의료용품 기부를 위한 긴급한 간청을 했습니다." },
+            { w: "underlying", p: "/ˌʌndərˈlaɪɪŋ/", k: "근본적인, 밑에 있는", ex: "It is essential to address the underlying causes of poverty rather than just treating its symptoms.", ek: "가난의 증상만 치료하기보다는 그 근본적인 원인을 해결하는 것이 필수적입니다." },
+            { w: "condemn", p: "/kənˈdem/", k: "규탄하다, 비난하다", ex: "The international community strongly condemned the act of unprovoked military aggression.", ek: "국제 사회는 이유 없는 군사적 침략 행위를 강력히 규탄했습니다." },
+            { w: "retaliate", p: "/rɪˈtælieɪt/", k: "보복하다", ex: "If attacked, the allied nations are fully prepared to retaliate with overwhelming military force.", ek: "공격을 받는다면, 동맹국들은 압도적인 군사력으로 보복할 만반의 준비가 되어 있습니다." },
+            { w: "precision", p: "/prɪˈsɪʒn/", k: "정확성, 정밀함", ex: "Modern surgical instruments allow complex operations to be performed with extraordinary precision.", ek: "현대의 외과 수술 도구들은 복잡한 수술이 엄청난 정밀함으로 수행될 수 있게 해줍니다." },
+            { w: "rash", p: "/ræʃ/", k: "경솔한, 성급한, 발진", ex: "It would be highly rash to make a final decision without considering all the available evidence.", ek: "이용 가능한 모든 증거를 고려하지 않고 최종 결정을 내리는 것은 매우 경솔한 일일 것입니다." },
+            { w: "euphoria", p: "/juːˈfɔːriə/", k: "행복감, 희열", ex: "The nation experienced a profound sense of euphoria following the end of the long war.", ek: "그 국가는 긴 전쟁이 끝난 후 깊은 희열감을 경험했습니다." },
+            { w: "destined for", p: "/ˈdestɪnd fɔːr/", k: "~로 향하는, ~할 운명인", ex: "The recently manufactured goods are primarily destined for the growing European market.", ek: "최근에 제조된 상품들은 주로 성장하고 있는 유럽 시장으로 향할 예정입니다." },
+            { w: "aftermath", p: "/ˈæftərmæθ/", k: "여파, 후유증", ex: "In the aftermath of the devastating earthquake, widespread reconstruction efforts were immediately initiated.", ek: "파괴적인 지진의 여파 속에서 광범위한 재건 노력이 즉각적으로 시작되었습니다." },
+            { w: "immense", p: "/ɪˈmens/", k: "엄청난, 어마어마한", ex: "The construction of the massive dam required an immense amount of capital and labor.", ek: "거대한 댐의 건설에는 엄청난 양의 자본과 노동력이 필요했습니다." },
+            { w: "stark", p: "/stɑːrk/", k: "극명한, 삭막한", ex: "There is a stark contrast between the wealthy urban centers and the impoverished rural regions.", ek: "부유한 도심과 빈곤한 농촌 지역 사이에는 극명한 대조가 존재합니다." },
+            { w: "flora", p: "/ˈflɔːrə/", k: "식물군", ex: "The isolated island is heavily protected and renowned for its diverse and unique flora.", ek: "그 고립된 섬은 철저히 보호받고 있으며 다양하고 독특한 식물군으로 유명합니다." },
+            { w: "wander", p: "/ˈwɑːndər/", k: "거닐다, 돌아다니다", ex: "Tourists often safely wander through the historic cobblestone streets of the old city.", ek: "관광객들은 종종 구시가지의 역사적인 자갈길을 안전하게 거닙니다." },
+            { w: "fauna", p: "/ˈfɔːnə/", k: "동물군", ex: "Strict environmental regulations are urgently needed to protect the indigenous fauna from extinction.", ek: "토착 동물군을 멸종으로부터 보호하기 위해 엄격한 환경 규제가 시급히 필요합니다." },
+            { w: "erect", p: "/ɪˈrekt/", k: "건립하다, 세우다", ex: "The city council plans to erect a large bronze statue in honor of the famous civil rights leader.", ek: "시의회는 유명한 인권 지도자를 기리기 위해 커다란 청동 동상을 건립할 계획입니다." },
+            { w: "negative correlation", p: "/ˈneɡətɪv ˌkɔːrəˈleɪʃn/", k: "음의 상관관계", ex: "Numerous scientific studies consistently show a negative correlation between regular exercise and heart disease.", ek: "수많은 과학적 연구들은 규칙적인 운동과 심장병 사이의 음의 상관관계를 일관되게 보여줍니다." },
+            { w: "the latter", p: "/ðə ˈlætər/", k: "후자", ex: "Given the choice between public transport and driving, many prefer the latter due to pure convenience.", ek: "대중교통과 운전 사이의 선택이 주어졌을 때, 많은 이들이 순전한 편리함 때문에 후자를 선호합니다." },
+            { w: "stand at", p: "/stænd æt/", k: "~의 수치에 이르다", ex: "The national unemployment rate currently stands at its highest level in over a decade.", ek: "국가 실업률은 현재 10년 만에 최고치에 달해 있습니다." },
+            { w: "outnumber", p: "/ˌaʊtˈnʌmbər/", k: "수적으로 우세하다, ~보다 수가 많다", ex: "In many primary educational institutions, female teachers vastly outnumber their male counterparts.", ek: "많은 초등 교육 기관에서 여성 교사의 수가 남성 교사의 수보다 압도적으로 많습니다." },
+            { w: "whereas", p: "/ˌwerˈæz/", k: "반면에, ~임에 비하여", ex: "Urban areas offer dynamic job opportunities, whereas rural areas provide a much quieter lifestyle.", ek: "도시 지역은 역동적인 일자리 기회를 제공하는 반면에, 농촌 지역은 훨씬 더 조용한 생활 방식을 제공합니다." },
+            { w: "on the contrary", p: "/ɑːn ðə ˈkɑːntreri/", k: "그와는 반대로", ex: "The new law did not reduce petty crime; on the contrary, it seemed to significantly increase it.", ek: "새로운 법안은 경범죄를 줄이지 못했습니다; 그와는 반대로 그것을 크게 증가시킨 것처럼 보였습니다." },
+            { w: "culminate", p: "/ˈkʌlmɪneɪt/", k: "절정에 달하다, ~으로 끝이 나다", ex: "Months of intense and complex negotiations finally culminated in a historic international peace treaty.", ek: "수개월 간의 치열하고 복잡한 협상이 마침내 역사적인 국제 평화 조약으로 절정에 달했습니다." },
+            { w: "be pumped into", p: "/bi pʌmpt ˈɪntu/", k: "(자금 등이) 투입되다", ex: "Significant government funding must be pumped into the educational system to immediately improve old facilities.", ek: "노후화된 시설을 즉각 개선하기 위해 상당한 정부 자금이 교육 시스템에 투입되어야 합니다." },
+            { w: "adjacent to", p: "/əˈdʒeɪsnt tu/", k: "~에 인접한", ex: "The newly built commercial center is conveniently located adjacent to the main central train station.", ek: "새로 지어진 상업 센터는 중앙 기차역에 인접하여 편리하게 위치해 있습니다." }
+        ];
+
+        let currentDeck = [];
+        let reviewSet = new Set();
+        let currentIndex = 0;
+
+        function shuffle(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex !== 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        function startRound(wordsArray) {
+            document.getElementById('study-container').style.display = 'flex';
+            document.getElementById('result-screen').style.display = 'none';
+            document.getElementById('app-header').style.display = 'block';
+
+            currentDeck = shuffle([...wordsArray]);
+            currentIndex = 0;
+            reviewSet.clear();
+
+            document.getElementById('total-num').innerText = currentDeck.length;
+            updateCardUI();
+        }
+
+        function startReviewRound() {
+            const wordsToReview = rawVocabData.filter(item => reviewSet.has(item.w));
+            startRound(wordsToReview);
+        }
+
+        function toggleFlip() {
+            const card = document.getElementById('flashcard');
+            card.classList.toggle('is-flipped');
+        }
+
+        function updateCardUI() {
+            const card = document.getElementById('flashcard');
+            
+            card.classList.add('no-transition');
+            card.classList.remove('is-flipped');
+            
+            void card.offsetWidth;
+
+            const data = currentDeck[currentIndex];
+            document.getElementById('word-en').innerText = data.w;
+            document.getElementById('word-pron').innerText = data.p;
+            document.getElementById('word-kr').innerText = data.k;
+            document.getElementById('example-en').innerText = `"${data.ex}"`;
+            document.getElementById('example-kr').innerText = data.ek;
+            
+            document.getElementById('current-num').innerText = currentIndex + 1;
+
+            const checkbox = document.getElementById('mark-review');
+            checkbox.checked = reviewSet.has(data.w);
+
+            document.getElementById('btn-prev').disabled = (currentIndex === 0);
+
+            setTimeout(() => {
+                card.classList.remove('no-transition');
+            }, 50);
+        }
+
+        document.getElementById('mark-review').addEventListener('change', function(e) {
+            const currentWord = currentDeck[currentIndex].w;
+            if (e.target.checked) {
+                reviewSet.add(currentWord);
+            } else {
+                reviewSet.delete(currentWord);
+            }
+        });
+
+        function nextCard() {
+            if (currentIndex < currentDeck.length - 1) {
+                currentIndex++;
+                updateCardUI();
+            } else {
+                showResult();
+            }
+        }
+
+        function prevCard() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                updateCardUI();
+            }
+        }
+
+        function showResult() {
+            document.getElementById('study-container').style.display = 'none';
+            document.getElementById('app-header').style.display = 'none';
+            document.getElementById('result-screen').style.display = 'flex';
+
+            const remaining = reviewSet.size;
+            const msgEl = document.getElementById('result-message');
+            const retryBtn = document.getElementById('btn-retry');
+
+            if (remaining > 0) {
+                msgEl.innerHTML = `총 <strong>${currentDeck.length}</strong>개의 단어 중 <br>연습이 필요한 단어가 <strong><span style="color:#e53e3e">${remaining}</span></strong>개 남았습니다.`;
+                retryBtn.style.display = 'inline-block';
+            } else {
+                msgEl.innerHTML = `대단합니다! 총 <strong>${currentDeck.length}</strong>개의 단어를 완벽하게 외우셨습니다. 🎉`;
+                retryBtn.style.display = 'none';
+            }
+        }
+
+        window.onload = () => {
+            startRound(rawVocabData);
+        };
+
+        document.addEventListener('keydown', (e) => {
+            if(document.getElementById('study-container').style.display === 'flex') {
+                if(e.key === 'ArrowRight') nextCard();
+                if(e.key === 'ArrowLeft') prevCard();
+                if(e.key === ' ' || e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    toggleFlip();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
